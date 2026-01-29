@@ -8,5 +8,7 @@ export default defineConfig({
     react(), 
     tailwindcss()
   ],
-  
+  preview: {
+    allowedHosts: ['unii-frontend.onrender.com']
+  }  
 })
