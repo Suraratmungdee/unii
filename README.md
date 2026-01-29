@@ -1,10 +1,3 @@
-โปรเจค frontend (React) สำหรับแสดงหน้า Screen และ Table
-
-## ความต้องการเบื้องต้น
-- Node.js >= 16.x
-- npm (หรือ yarn / pnpm)
-- Git (สำหรับ clone / push)
-
 ## ติดตั้ง (macOS)
 1. Clone repo
 ```bash
