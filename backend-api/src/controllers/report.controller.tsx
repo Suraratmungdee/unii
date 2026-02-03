@@ -28,23 +28,38 @@ export const Report = async (req: Request, res: Response) => {
                         if (orderId) {
                             queryBuilder.andWhere('t.orderId', 'like', `%${orderId as string}%`);
                         }
-                        if (minPrice) {
-                            queryBuilder.andWhere('tranitem.price', '>=', minPrice as string);
-                        }
-                        if (maxPrice) {
-                            queryBuilder.andWhere('tranitem.price', '<=', maxPrice as string);
-                        }
                         if (grade) {
                             queryBuilder.andWhere('tranitem.grade', grade as string);
                         }
                     })
                     .groupBy('trancat.categoryId', 'trancat.subCategoryId')
-                    .havingRaw(`
-                        SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) > 0 OR
-                        SUM(CASE WHEN "t"."transactionType" = 'B' THEN CAST("tranitem"."quantity" AS NUMERIC) ELSE 0 END) > 0 OR
-                        SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) > 0 OR
-                        SUM(CASE WHEN "t"."transactionType" = 'S' THEN CAST("tranitem"."quantity" AS NUMERIC) ELSE 0 END) > 0
-                    `)
+                    .modify(function (queryBuilder) {
+                        let conditions = [];
+
+                        conditions.push(`
+                            (SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) > 0 OR
+                             SUM(CASE WHEN "t"."transactionType" = 'B' THEN CAST("tranitem"."quantity" AS NUMERIC) ELSE 0 END) > 0 OR
+                             SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) > 0 OR
+                             SUM(CASE WHEN "t"."transactionType" = 'S' THEN CAST("tranitem"."quantity" AS NUMERIC) ELSE 0 END) > 0)
+                        `);
+
+                        if (minPrice) {
+                            conditions.push(`(
+                                SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) >= ${parseFloat(minPrice as string)} OR
+                                SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) >= ${parseFloat(minPrice as string)}
+                            )`);
+                        }
+                        if (maxPrice) {
+                            conditions.push(`(
+                                SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) <= ${parseFloat(maxPrice as string)} OR
+                                SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) <= ${parseFloat(maxPrice as string)}
+                            )`);
+                        }
+
+                        if (conditions.length > 0) {
+                            queryBuilder.havingRaw(conditions.join(' AND '));
+                        }
+                    })
                     .as('grouped')
             )
             .first();
@@ -75,28 +90,45 @@ export const Report = async (req: Request, res: Response) => {
                 if (orderId) {
                     queryBuilder.andWhere('t.orderId', 'like', `%${orderId as string}%`);
                 }
-                if (minPrice) {
-                    queryBuilder.andWhere('tranitem.price', '>=', minPrice as string);
-                }
-                if (maxPrice) {
-                    queryBuilder.andWhere('tranitem.price', '<=', maxPrice as string);
-                }
                 if (grade) {
                     queryBuilder.andWhere('tranitem.grade', grade as string);
                 }
             })
             .groupBy('trancat.categoryId', 'trancat.subCategoryId', 'cat.categoryName', 'subcat.subCategoryName')
-            .havingRaw(`
-                SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) > 0 OR
-                SUM(CASE WHEN "t"."transactionType" = 'B' THEN CAST("tranitem"."quantity" AS NUMERIC) ELSE 0 END) > 0 OR
-                SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) > 0 OR
-                SUM(CASE WHEN "t"."transactionType" = 'S' THEN CAST("tranitem"."quantity" AS NUMERIC) ELSE 0 END) > 0
-            `)
+            .modify(function (queryBuilder) {
+                let conditions = [];
+
+                // เงื่อนไขให้มีข้อมูล
+                conditions.push(`
+                    (SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) > 0 OR
+                     SUM(CASE WHEN "t"."transactionType" = 'B' THEN CAST("tranitem"."quantity" AS NUMERIC) ELSE 0 END) > 0 OR
+                     SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) > 0 OR
+                     SUM(CASE WHEN "t"."transactionType" = 'S' THEN CAST("tranitem"."quantity" AS NUMERIC) ELSE 0 END) > 0)
+                `);
+
+                // Filter ตาม minPrice/maxPrice
+                if (minPrice) {
+                    conditions.push(`(
+                        SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) >= ${parseFloat(minPrice as string)} OR
+                        SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) >= ${parseFloat(minPrice as string)}
+                    )`);
+                }
+                if (maxPrice) {
+                    conditions.push(`(
+                        SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) <= ${parseFloat(maxPrice as string)} OR
+                        SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) <= ${parseFloat(maxPrice as string)}
+                    )`);
+                }
+
+                if (conditions.length > 0) {
+                    queryBuilder.havingRaw(conditions.join(' AND '));
+                }
+            })
             .orderBy('trancat.categoryId', 'ASC')
             .offset(offset ? parseInt(offset as string) : 0)
             .limit(limit ? parseInt(limit as string) : 10);
 
-        const res_result = result.map((item) => ({
+        const res_result = result.map((item: any) => ({
             categoryName: item.categoryName,
             subCategoryName: item.subCategoryName,
             buyPrice: Number(item.buyPrice),
