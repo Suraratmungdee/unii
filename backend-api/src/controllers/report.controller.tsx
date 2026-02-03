@@ -107,14 +107,20 @@ export const Report = async (req: Request, res: Response) => {
 
                 if (minPrice) {
                     conditions.push(`(
-                        SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) >= ${parseFloat(minPrice as string)} OR
-                        SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) >= ${parseFloat(minPrice as string)}
+                        (SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) >= ${parseFloat(minPrice as string)} AND 
+                         SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) > 0) 
+                        OR 
+                        (SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) >= ${parseFloat(minPrice as string)} AND
+                         SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) > 0)
                     )`);
                 }
                 if (maxPrice) {
                     conditions.push(`(
-                        SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) <= ${parseFloat(maxPrice as string)} OR
-                        SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) <= ${parseFloat(maxPrice as string)}
+                        (SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) <= ${parseFloat(maxPrice as string)} AND
+                         SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) > 0)
+                        OR 
+                        (SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) <= ${parseFloat(maxPrice as string)} AND
+                         SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) > 0)
                     )`);
                 }
 
