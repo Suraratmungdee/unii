@@ -40,7 +40,7 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
     "moduleResolution": "NodeNext", // ต้องเป็น NodeNext เหมือนกัน
-    "types": ["node"],             // ตรวจสอบว่ามีบรรทัดนี้
+
     "esModuleInterop": true,
     "typeRoots": ["./node_modules/@types"]
   }
