@@ -18,3 +18,17 @@ npm install
 ```bash
 # ถ้าใช้ Vite
 npm run dev
+
+4. เข้าโฟลเดอร์ backend-api และติดตั้ง dependencies
+```bash
+cd backend-api
+npm install
+# หรือใช้ yarn / pnpm ตามที่ต้องการ
+# yarn
+# pnpm install
+```
+
+5. รันในโหมดพัฒนา
+```bash
+# ถ้าใช้ Vite
+npm run dev
