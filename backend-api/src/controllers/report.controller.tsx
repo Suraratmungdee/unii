@@ -98,15 +98,13 @@ export const Report = async (req: Request, res: Response) => {
             .modify(function (queryBuilder) {
                 let conditions = [];
 
-                // เงื่อนไขให้มีข้อมูล
                 conditions.push(`
                     (SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) > 0 OR
-                     SUM(CASE WHEN "t"."transactionType" = 'B' THEN CAST("tranitem"."quantity" AS NUMERIC) ELSE 0 END) > 0 OR
-                     SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) > 0 OR
-                     SUM(CASE WHEN "t"."transactionType" = 'S' THEN CAST("tranitem"."quantity" AS NUMERIC) ELSE 0 END) > 0)
+                    SUM(CASE WHEN "t"."transactionType" = 'B' THEN CAST("tranitem"."quantity" AS NUMERIC) ELSE 0 END) > 0 OR
+                    SUM(CASE WHEN "t"."transactionType" = 'S' THEN "tranitem"."price" ELSE 0 END) > 0 OR
+                    SUM(CASE WHEN "t"."transactionType" = 'S' THEN CAST("tranitem"."quantity" AS NUMERIC) ELSE 0 END) > 0)
                 `);
 
-                // Filter ตาม minPrice/maxPrice
                 if (minPrice) {
                     conditions.push(`(
                         SUM(CASE WHEN "t"."transactionType" = 'B' THEN "tranitem"."price" ELSE 0 END) >= ${parseFloat(minPrice as string)} OR
