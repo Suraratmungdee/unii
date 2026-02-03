@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface Data {
     categoryName: string;
@@ -72,7 +72,7 @@ const InventoryReport: React.FC = () => {
     ) => {
         try {
             setLoading(true);
-            const response = await fetch(`http://localhost:5000/api/report?orderFinishedDate=${date}&categoryId=${categoryId}&subCategoryId=${subCategoryId}&orderId=${orderId}&maxPrice=${maxPrice}&minPrice=${minPrice}&grade=${grade}&limit=${limit}&offset=${offset}`);
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/report?orderFinishedDate=${date}&categoryId=${categoryId}&subCategoryId=${subCategoryId}&orderId=${orderId}&maxPrice=${maxPrice}&minPrice=${minPrice}&grade=${grade}&limit=${limit}&offset=${offset}`);
             const result = await response.json();
             setData(result.data);
             setTotalRecords(result.res_total);
@@ -85,7 +85,7 @@ const InventoryReport: React.FC = () => {
 
     const getCategorys = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/category');
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/category`);
             const result = await response.json();
             setCategorys(result.res_result);
         } catch (error) {
@@ -100,7 +100,7 @@ const InventoryReport: React.FC = () => {
         }
         try {
             setLoadingSubCategory(true);
-            const response = await fetch(`http://localhost:5000/api/subcategory?categoryId=${categoryId}`);
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/subcategory?categoryId=${categoryId}`);
             const result = await response.json();
             setSubCategorys(result.res_result);
         } catch (error) {
